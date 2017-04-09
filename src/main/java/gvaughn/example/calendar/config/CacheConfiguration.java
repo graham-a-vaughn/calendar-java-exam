@@ -40,6 +40,8 @@ public class CacheConfiguration {
             cm.createCache(gvaughn.example.calendar.domain.User.class.getName(), jcacheConfiguration);
             cm.createCache(gvaughn.example.calendar.domain.Authority.class.getName(), jcacheConfiguration);
             cm.createCache(gvaughn.example.calendar.domain.User.class.getName() + ".authorities", jcacheConfiguration);
+            cm.createCache(gvaughn.example.calendar.domain.Calendar.class.getName(), jcacheConfiguration);
+            cm.createCache(gvaughn.example.calendar.domain.CalendarEvent.class.getName(), jcacheConfiguration);
             // jhipster-needle-ehcache-add-entry
         };
     }

@@ -1,0 +1,68 @@
+<div>
+    <h2>Calendar Events</h2>
+    <jhi-alert></jhi-alert>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xs-4 no-padding-left">
+                <button class="btn btn-primary" ui-sref="calendar-event.new" >
+                    <span class="glyphicon glyphicon-plus"></span>
+                    <span >
+                        Create new Calendar Event
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <br/>
+    <div class="table-responsive">
+        <table class="jh-table table table-striped">
+            <thead>
+                <tr>
+                    <th><span>ID</span></th>
+                    <th><span>Title</span></th>
+                    <th><span>Time</span></th>
+                    <th><span>Location</span></th>
+                    <th><span>Reminder Time</span></th>
+                    <th><span>Reminder Sent</span></th>
+                    <th><span>Calendar</span></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="calendarEvent in vm.calendarEvents track by calendarEvent.id">
+                    <td><a ui-sref="calendar-event-detail({id:calendarEvent.id})">{{calendarEvent.id}}</a></td>
+                    <td>{{calendarEvent.title}}</td>
+                    <td>{{calendarEvent.time | date:'medium'}}</td>
+                    <td>{{calendarEvent.location}}</td>
+                    <td>{{calendarEvent.reminderTime | date:'medium'}}</td>
+                    <td>{{calendarEvent.reminderSent}}</td>
+                    <td>
+                        <a ui-sref="calendar-detail({id:calendarEvent.calendar.id})">{{calendarEvent.calendar.id}}</a>
+                    </td>
+                    <td class="text-right">
+                        <div class="btn-group flex-btn-group-container">
+                            <button type="submit"
+                                    ui-sref="calendar-event-detail({id:calendarEvent.id})"
+                                    class="btn btn-info btn-sm">
+                                <span class="glyphicon glyphicon-eye-open"></span>
+                                <span class="hidden-sm-down"></span>
+                            </button>
+                            <button type="submit"
+                                    ui-sref="calendar-event.edit({id:calendarEvent.id})"
+                                    class="btn btn-primary btn-sm">
+                                <span class="glyphicon glyphicon-pencil"></span>
+                                <span class="hidden-sm-down"></span>
+                            </button>
+                            <button type="submit"
+                                    ui-sref="calendar-event.delete({id:calendarEvent.id})"
+                                    class="btn btn-danger btn-sm">
+                                <span class="glyphicon glyphicon-remove-circle"></span>
+                                <span class="hidden-sm-down"></span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

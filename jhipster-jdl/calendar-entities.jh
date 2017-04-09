@@ -1,0 +1,18 @@
+entity Calendar {
+    name String required maxlength(255)
+}
+
+entity CalendarEvent {
+    title String required maxlength(255)
+    time ZonedDateTime required
+    location String maxlength(255)
+    reminderTime ZonedDateTime required
+    reminderSent Boolean required
+}
+
+relationship ManyToOne {
+  CalendarEvent{calendar required} to Calendar
+}
+
+service CalendarEvent with serviceClass
+
