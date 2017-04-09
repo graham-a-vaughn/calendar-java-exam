@@ -1,0 +1,14 @@
+version: '2'
+services:
+    calendarapp-app:
+        image: calendarapp
+        environment:
+            - SPRING_PROFILES_ACTIVE=prod,swagger
+            - SPRING_DATASOURCE_URL=jdbc:postgresql://calendarapp-postgresql:5432/calendarApp
+            - JHIPSTER_SLEEP=10 # gives time for the database to boot before the application
+        ports:
+            - 8080:8080
+    calendarapp-postgresql:
+        extends:
+            file: postgresql.yml
+            service: calendarapp-postgresql
