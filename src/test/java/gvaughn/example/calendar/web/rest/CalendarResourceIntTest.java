@@ -1,11 +1,10 @@
 package gvaughn.example.calendar.web.rest;
 
 import gvaughn.example.calendar.CalendarApp;
-
 import gvaughn.example.calendar.domain.Calendar;
+import gvaughn.example.calendar.domain.User;
 import gvaughn.example.calendar.repository.CalendarRepository;
 import gvaughn.example.calendar.web.rest.errors.ExceptionTranslator;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -78,6 +77,10 @@ public class CalendarResourceIntTest {
     public static Calendar createEntity(EntityManager em) {
         Calendar calendar = new Calendar()
             .name(DEFAULT_NAME);
+        User calendarUser = UserResourceIntTest.createEntity(em);
+        em.persist(calendarUser);
+        em.flush();
+        calendar.setUser(calendarUser);
         return calendar;
     }
 

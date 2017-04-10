@@ -47,8 +47,18 @@
 
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here, do not remove-->
         </createTable>
+
+        <createTable tableName="calendar_event_attendees">
+            <column name="calendar_event_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="attendee_event_fk" references="calendar_event(id)"/>
+            </column>
+            <column name="attendee_email" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
         <dropDefaultValue tableName="calendar_event" columnName="jhi_time" columnDataType="datetime"/>
         <dropDefaultValue tableName="calendar_event" columnName="reminder_time" columnDataType="datetime"/>
-        
+
     </changeSet>
 </databaseChangeLog>

@@ -27,6 +27,7 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
 import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.List;
 
 import static gvaughn.example.calendar.web.rest.TestUtil.sameInstant;
@@ -52,6 +53,8 @@ public class CalendarEventResourceIntTest {
 
     private static final String DEFAULT_LOCATION = "AAAAAAAAAA";
     private static final String UPDATED_LOCATION = "BBBBBBBBBB";
+
+    private static final String[] DEFAULT_ATTENDEES = new String[]{"john.doe@example.com", "doe.re@example.com"};
 
     private static final ZonedDateTime DEFAULT_REMINDER_TIME = ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneOffset.UTC);
     private static final ZonedDateTime UPDATED_REMINDER_TIME = ZonedDateTime.now(ZoneId.systemDefault()).withNano(0);
@@ -104,6 +107,8 @@ public class CalendarEventResourceIntTest {
             .location(DEFAULT_LOCATION)
             .reminderTime(DEFAULT_REMINDER_TIME)
             .reminderSent(DEFAULT_REMINDER_SENT);
+        calendarEvent.getAttendees().addAll(Arrays.asList(DEFAULT_ATTENDEES));
+
         // Add required entity
         Calendar calendar = CalendarResourceIntTest.createEntity(em);
         em.persist(calendar);

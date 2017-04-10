@@ -7,7 +7,9 @@ import javax.persistence.*;
 import javax.validation.constraints.*;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * A CalendarEvent.
@@ -44,6 +46,11 @@ public class CalendarEvent implements Serializable {
     @NotNull
     @Column(name = "reminder_sent", nullable = false)
     private Boolean reminderSent;
+
+    @ElementCollection
+    @CollectionTable(name = "calendar_event_attendees", joinColumns = @JoinColumn(name = "calendar_event_id"))
+    @Column(name = "attendee_email")
+    private Set<String> attendees = new HashSet<>();
 
     @ManyToOne(optional = false)
     @NotNull
@@ -120,6 +127,14 @@ public class CalendarEvent implements Serializable {
 
     public void setReminderSent(Boolean reminderSent) {
         this.reminderSent = reminderSent;
+    }
+
+    public Set<String> getAttendees() {
+        return attendees;
+    }
+
+    public void setAttendees(Set<String> attendees) {
+        this.attendees = attendees;
     }
 
     public Calendar getCalendar() {

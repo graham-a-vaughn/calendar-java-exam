@@ -23,6 +23,11 @@ public class Calendar implements Serializable {
     @SequenceGenerator(name = "sequenceGenerator")
     private Long id;
 
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "user_id")
+    @NotNull
+    private User user;
+
     @NotNull
     @Size(max = 255)
     @Column(name = "name", length = 255, nullable = false)
@@ -38,6 +43,14 @@ public class Calendar implements Serializable {
 
     public String getName() {
         return name;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public Calendar name(String name) {

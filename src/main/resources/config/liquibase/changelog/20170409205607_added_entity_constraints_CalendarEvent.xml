@@ -7,12 +7,13 @@
         Added the constraints for entity CalendarEvent.
     -->
     <changeSet id="20170409205607-2" author="jhipster">
-        
+
         <addForeignKeyConstraint baseColumnNames="calendar_id"
                                  baseTableName="calendar_event"
                                  constraintName="fk_calendar_event_calendar_id"
                                  referencedColumnNames="id"
                                  referencedTableName="calendar"/>
+        <addPrimaryKey tableName="calendar_event_attendees" columnNames="calendar_event_id, attendee_email" />
 
     </changeSet>
 </databaseChangeLog>
