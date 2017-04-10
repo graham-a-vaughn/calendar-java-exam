@@ -97,6 +97,18 @@ public class CalendarEventService {
     }
 
     /**
+     * Returns all calendar events for the given user.
+     * @param user User whose events will be returned.
+     * @return All calendar events for the given user.
+     */
+    @Transactional(readOnly = true)
+    public List<CalendarEvent> findByUser(User user) {
+        Objects.requireNonNull(user);
+        Calendar calendar = calendarService.getCalendarForUser(user);
+        return calendarEventRepository.findByCalendarOrderByTime(calendar);
+    }
+
+    /**
      *  Get one calendarEvent by id.
      *
      *  @param id the id of the entity

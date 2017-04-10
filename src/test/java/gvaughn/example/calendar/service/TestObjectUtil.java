@@ -27,8 +27,12 @@ public class TestObjectUtil {
     private static final Boolean DEFAULT_REMINDER_SENT = false;
 
     public static User createUser(UserService userService) {
-        return userService.createUser("user@example.com", "password", "User", "Bruiser",
-            "user@example.com", null, null);
+        return createUser(userService, Math.round(Math.random()));
+    }
+
+    public static User createUser(UserService userService, long index) {
+        return userService.createUser(index + "user@example.com", "password", "User", "Bruiser",
+            index + "user@example.com", null, null);
     }
 
     public static CalendarEvent createCalendarEvent() {

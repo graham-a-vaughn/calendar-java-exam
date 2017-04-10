@@ -14,9 +14,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import java.text.ParseException;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 /**
  * Created by Graham Vaughn on 4/10/2017.
@@ -25,6 +30,8 @@ import static org.junit.Assert.assertTrue;
 @SpringBootTest(classes = CalendarApp.class)
 @Transactional
 public class CalendarEventServiceIntTest {
+
+    private static final int USER_EVENT_COUNT = 3;
 
     @Autowired
     private UserService userService;
@@ -102,7 +109,47 @@ public class CalendarEventServiceIntTest {
         CalendarEvent updated = calendarEventService.update(updateDTO);
     }
 
+    @Test
+    public void returnEventsByUser() throws ParseException {
+        User user = createUser(0);
+        User antiUser = createUser(1);
+        String eventTitleTemplate = "Event #%d";
+        String antiEventTitleTemplate = "AntiEvent #%d";
+        long seconds = 10000;
+        List<CalendarEvent> userEvents = new ArrayList<>();
+        List<CalendarEvent> allEvents = new ArrayList<>();
+        for (int i = 0; i < USER_EVENT_COUNT; i++) {
+            CalendarEvent event = TestObjectUtil.createCalendarEvent();
+            event.setTitle(String.format(eventTitleTemplate, (i + 1)));
+            event.setTime(ZonedDateTime.ofInstant(Instant.ofEpochSecond(seconds), ZoneOffset.UTC));
+            CalendarEventDTO dto = calendarEventMapper.calendarEventToDTO(event);
+            event = calendarEventService.create(dto, user);
+            userEvents.add(event);
+            allEvents.add(event);
+
+            event = TestObjectUtil.createCalendarEvent();
+            event.setTitle(String.format(eventTitleTemplate, (i + 1)));
+            event.setTime(ZonedDateTime.ofInstant(Instant.ofEpochSecond(seconds), ZoneOffset.UTC));
+            dto = calendarEventMapper.calendarEventToDTO(event);
+            calendarEventService.create(dto, antiUser);
+            allEvents.add(event);
+            seconds += seconds;
+        }
+
+        List<CalendarEvent> retrievedEvents = calendarEventService.findByUser(user);
+        assertNotNull(retrievedEvents);
+        assertEquals(USER_EVENT_COUNT, retrievedEvents.size());
+        assertNotEquals(allEvents.size(), retrievedEvents.size());
+        for (CalendarEvent event : retrievedEvents) {
+            assertFalse(event.getTitle().contains("AntiEvent"));
+        }
+    }
+
     private User createUser() {
         return TestObjectUtil.createUser(userService);
+    }
+
+    private User createUser(int index) {
+        return TestObjectUtil.createUser(userService, index);
     }
 }

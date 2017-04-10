@@ -84,7 +84,7 @@ public class CalendarEventResource {
     }
 
     /**
-     * GET  /calendar-events : get all the calendarEvents.
+     * GET  /calendar-events : get all the calendarEvents for the current user.
      *
      * @return the ResponseEntity with status 200 (OK) and the list of calendarEvents in body
      */
@@ -92,7 +92,8 @@ public class CalendarEventResource {
     @Timed
     public List<CalendarEvent> getAllCalendarEvents() {
         log.debug("REST request to get all CalendarEvents");
-        return calendarEventService.findAll();
+        User currentUser = userService.getUserWithAuthorities();
+        return calendarEventService.findByUser(currentUser);
     }
 
     /**
