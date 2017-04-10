@@ -57,7 +57,6 @@ public class CalendarServiceIntTest {
         return new Calendar().name("Default test calendar");
     }
     private User createUser() {
-        return userService.createUser("user@example.com", "password", "User", "Bruiser",
-            "user@example.com", null, null);
+        return TestObjectUtil.createUser(userService);
     }
 }

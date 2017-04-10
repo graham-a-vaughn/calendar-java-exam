@@ -2,11 +2,15 @@ package gvaughn.example.calendar.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
 import gvaughn.example.calendar.domain.CalendarEvent;
+import gvaughn.example.calendar.domain.User;
 import gvaughn.example.calendar.service.CalendarEventService;
+import gvaughn.example.calendar.service.UserService;
+import gvaughn.example.calendar.service.dto.CalendarEventDTO;
 import gvaughn.example.calendar.web.rest.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,8 +30,11 @@ public class CalendarEventResource {
     private final Logger log = LoggerFactory.getLogger(CalendarEventResource.class);
 
     private static final String ENTITY_NAME = "calendarEvent";
-        
+
     private final CalendarEventService calendarEventService;
+
+    @Autowired
+    private UserService userService;
 
     public CalendarEventResource(CalendarEventService calendarEventService) {
         this.calendarEventService = calendarEventService;
@@ -42,12 +49,13 @@ public class CalendarEventResource {
      */
     @PostMapping("/calendar-events")
     @Timed
-    public ResponseEntity<CalendarEvent> createCalendarEvent(@Valid @RequestBody CalendarEvent calendarEvent) throws URISyntaxException {
-        log.debug("REST request to save CalendarEvent : {}", calendarEvent);
+    public ResponseEntity<CalendarEvent> createCalendarEvent(@Valid @RequestBody CalendarEventDTO calendarEvent) throws URISyntaxException {
+        log.debug("REST request to create CalendarEvent : {}", calendarEvent);
         if (calendarEvent.getId() != null) {
             return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new calendarEvent cannot already have an ID")).body(null);
         }
-        CalendarEvent result = calendarEventService.save(calendarEvent);
+        User currentUser = userService.getUserWithAuthorities();
+        CalendarEvent result = calendarEventService.create(calendarEvent, currentUser);
         return ResponseEntity.created(new URI("/api/calendar-events/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -64,12 +72,12 @@ public class CalendarEventResource {
      */
     @PutMapping("/calendar-events")
     @Timed
-    public ResponseEntity<CalendarEvent> updateCalendarEvent(@Valid @RequestBody CalendarEvent calendarEvent) throws URISyntaxException {
+    public ResponseEntity<CalendarEvent> updateCalendarEvent(@Valid @RequestBody CalendarEventDTO calendarEvent) throws URISyntaxException {
         log.debug("REST request to update CalendarEvent : {}", calendarEvent);
         if (calendarEvent.getId() == null) {
             return createCalendarEvent(calendarEvent);
         }
-        CalendarEvent result = calendarEventService.save(calendarEvent);
+        CalendarEvent result = calendarEventService.update(calendarEvent);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, calendarEvent.getId().toString()))
             .body(result);

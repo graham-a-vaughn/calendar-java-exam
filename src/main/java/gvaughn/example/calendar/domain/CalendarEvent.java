@@ -45,9 +45,9 @@ public class CalendarEvent implements Serializable {
 
     @NotNull
     @Column(name = "reminder_sent", nullable = false)
-    private Boolean reminderSent;
+    private Boolean reminderSent = Boolean.FALSE;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "calendar_event_attendees", joinColumns = @JoinColumn(name = "calendar_event_id"))
     @Column(name = "attendee_email")
     private Set<String> attendees = new HashSet<>();

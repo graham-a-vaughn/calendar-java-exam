@@ -1,13 +1,20 @@
 package gvaughn.example.calendar.service;
 
+import gvaughn.example.calendar.domain.Calendar;
 import gvaughn.example.calendar.domain.CalendarEvent;
+import gvaughn.example.calendar.domain.User;
 import gvaughn.example.calendar.repository.CalendarEventRepository;
+import gvaughn.example.calendar.service.dto.CalendarEventDTO;
+import gvaughn.example.calendar.service.mapper.CalendarEventMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Service Implementation for managing CalendarEvent.
@@ -17,8 +24,14 @@ import java.util.List;
 public class CalendarEventService {
 
     private final Logger log = LoggerFactory.getLogger(CalendarEventService.class);
-    
+
     private final CalendarEventRepository calendarEventRepository;
+
+    @Autowired
+    private CalendarService calendarService;
+
+    @Autowired
+    private CalendarEventMapper calendarEventMapper;
 
     public CalendarEventService(CalendarEventRepository calendarEventRepository) {
         this.calendarEventRepository = calendarEventRepository;
@@ -37,8 +50,42 @@ public class CalendarEventService {
     }
 
     /**
+     * Create a new calendar event for the given user.
+     * @param dto Event DTO.
+     * @param user Event owner.
+     * @return The newly created calendar event.
+     */
+    public CalendarEvent create(CalendarEventDTO dto, User user) {
+        Objects.requireNonNull(dto);
+        Objects.requireNonNull(user);
+        if (dto.getId() != null) {
+            throw new IllegalArgumentException("Create requires a null id.");
+        }
+        CalendarEvent event = calendarEventMapper.dtoToCalendarEvent(dto);
+        Calendar calendar = calendarService.getCalendarForUser(user);
+        event.setCalendar(calendar);
+        return calendarEventRepository.save(event);
+    }
+
+    /**
+     * Update a calendar event.
+     * @param dto DTO with updated event data.
+     * @return Updated calendar event.
+     */
+    public CalendarEvent update(CalendarEventDTO dto) {
+        Objects.requireNonNull(dto);
+        Objects.requireNonNull(dto.getId());
+        CalendarEvent updated = calendarEventMapper.dtoToCalendarEvent(dto);
+        CalendarEvent event = Optional.ofNullable(calendarEventRepository.findOne(dto.getId()))
+            .orElseThrow(() -> new IllegalArgumentException("Invalid calendar event id: " + dto.getId()));
+        updated.setCalendar(event.getCalendar());
+        updated.setReminderSent(event.isReminderSent());
+        return calendarEventRepository.save(updated);
+    }
+
+    /**
      *  Get all the calendarEvents.
-     *  
+     *
      *  @return the list of entities
      */
     @Transactional(readOnly = true)

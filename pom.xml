@@ -37,6 +37,8 @@
         <jcache.version>1.0.0</jcache.version>
         <jhipster.server.version>1.1.2</jhipster.server.version>
         <jjwt.version>0.7.0</jjwt.version>
+        <jvm.args.prod></jvm.args.prod>
+        <jvm.args.dev>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</jvm.args.dev>
         <liquibase-hibernate5.version>3.6</liquibase-hibernate5.version>
         <liquibase-slf4j.version>2.0.0</liquibase-slf4j.version>
         <logstash-logback-encoder.version>4.9</logstash-logback-encoder.version>
@@ -120,7 +122,7 @@
             <artifactId>metrics-json</artifactId>
             <version>${dropwizard-metrics.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-jcache</artifactId>
@@ -559,6 +561,7 @@
                     Enable the line below to have remote debugging of your application on port 5005
                     <jvmArguments>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</jvmArguments>
                     -->
+                    <jvmArguments>${jvm.args.dev}</jvmArguments>
                 </configuration>
             </plugin>
             <plugin>
