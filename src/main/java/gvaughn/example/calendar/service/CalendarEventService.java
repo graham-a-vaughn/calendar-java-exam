@@ -38,20 +38,11 @@ public class CalendarEventService {
     @Autowired
     private CalendarEventMapper calendarEventMapper;
 
+    @Autowired
+    private CalendarEventReminderService calendarEventReminderService;
+
     public CalendarEventService(CalendarEventRepository calendarEventRepository) {
         this.calendarEventRepository = calendarEventRepository;
-    }
-
-    /**
-     * Save a calendarEvent.
-     *
-     * @param calendarEvent the entity to save
-     * @return the persisted entity
-     */
-    public CalendarEvent save(CalendarEvent calendarEvent) {
-        log.debug("Request to save CalendarEvent : {}", calendarEvent);
-        CalendarEvent result = calendarEventRepository.save(calendarEvent);
-        return result;
     }
 
     /**
@@ -69,7 +60,9 @@ public class CalendarEventService {
         CalendarEvent event = calendarEventMapper.dtoToCalendarEvent(dto);
         Calendar calendar = calendarService.getCalendarForUser(user);
         event.setCalendar(calendar);
-        return calendarEventRepository.save(event);
+        event = calendarEventRepository.save(event);
+        calendarEventReminderService.scheduleReminder(event);
+        return event;
     }
 
     /**
@@ -83,9 +76,24 @@ public class CalendarEventService {
         CalendarEvent updated = calendarEventMapper.dtoToCalendarEvent(dto);
         CalendarEvent event = Optional.ofNullable(calendarEventRepository.findOne(dto.getId()))
             .orElseThrow(() -> new IllegalArgumentException("Invalid calendar event id: " + dto.getId()));
+
         updated.setCalendar(event.getCalendar());
         updated.setReminderSent(event.isReminderSent());
+        if (!reminderTimesEqual(event, updated)) {
+            calendarEventReminderService.updateReminder(updated);
+        }
         return calendarEventRepository.save(updated);
+    }
+
+    private boolean reminderTimesEqual(CalendarEvent event, CalendarEvent updated) {
+        if (event.getReminderTime() == null ) {
+            return updated.getReminderTime() == null;
+        }
+        if (updated.getReminderTime() != null) {
+            return updated.getReminderTime().truncatedTo(ChronoUnit.MINUTES)
+                .equals(event.getReminderTime().truncatedTo(ChronoUnit.MINUTES));
+        }
+        return false;
     }
 
     /**
@@ -149,6 +157,7 @@ public class CalendarEventService {
      */
     public void delete(Long id) {
         log.debug("Request to delete CalendarEvent : {}", id);
+        calendarEventReminderService.cancelReminder(id);
         calendarEventRepository.delete(id);
     }
 }
