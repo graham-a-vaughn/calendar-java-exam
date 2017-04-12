@@ -4,7 +4,9 @@ import gvaughn.example.calendar.CalendarApp;
 
 import gvaughn.example.calendar.domain.CalendarEvent;
 import gvaughn.example.calendar.domain.Calendar;
+import gvaughn.example.calendar.domain.User;
 import gvaughn.example.calendar.repository.CalendarEventRepository;
+import gvaughn.example.calendar.repository.CalendarRepository;
 import gvaughn.example.calendar.service.CalendarEventService;
 import gvaughn.example.calendar.service.TestObjectUtil;
 import gvaughn.example.calendar.service.UserService;
@@ -68,9 +70,13 @@ public class CalendarEventResourceIntTest {
 
     private static final Boolean DEFAULT_REMINDER_SENT = false;
     private static final Boolean UPDATED_REMINDER_SENT = true;
+    private static final String DEFAULT_NAME = "Calendar";
 
     @Autowired
     private CalendarEventRepository calendarEventRepository;
+
+    @Autowired
+    private CalendarRepository calendarRepository;
 
     @Autowired
     private UserService userService;
@@ -95,8 +101,8 @@ public class CalendarEventResourceIntTest {
 
     private MockMvc restCalendarEventMockMvc;
 
-    private CalendarEvent calendarEvent;
-    private CalendarEventDTO calendarEventDTO;
+    //private CalendarEvent calendarEvent;
+    //private CalendarEventDTO calendarEventDTO;
 
     @Before
     public void setup() throws NoSuchFieldException {
@@ -128,8 +134,27 @@ public class CalendarEventResourceIntTest {
 
     @Before
     public void initTest() {
-        calendarEvent = createEntity(em);
-        calendarEventDTO = calendarEventMapper.calendarEventToDTO(calendarEvent);
+
+        /*Calendar calendar = new Calendar()
+            .name(DEFAULT_NAME);
+        User user = userService.getUserWithAuthorities();
+        calendar.setUser(user);
+        calendar = calendarRepository.save(calendar);
+        //calendarEvent.setCalendar(calendar);
+        calendarEvent = calendarEventRepository.save(calendarEvent);
+        calendarEventDTO = calendarEventMapper.calendarEventToDTO(calendarEvent);*/
+    }
+
+    protected CalendarEventDTO getEventDTO() {
+        CalendarEvent calendarEvent = TestObjectUtil.createCalendarEvent();
+        return calendarEventMapper.calendarEventToDTO(calendarEvent);
+    }
+
+    protected void persistCalendarEvent() {
+        CalendarEvent event = TestObjectUtil.createCalendarEvent();
+        User user = userService.getUserWithAuthorities();
+        CalendarEventDTO dto = calendarEventMapper.calendarEventToDTO(event);
+        calendarEventService.create(dto, user);
     }
 
     @Test
@@ -138,6 +163,7 @@ public class CalendarEventResourceIntTest {
         int databaseSizeBeforeCreate = calendarEventRepository.findAll().size();
 
         // Create the CalendarEvent
+        CalendarEventDTO calendarEventDTO = getEventDTO();
         restCalendarEventMockMvc.perform(post("/api/calendar-events")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
             .content(TestUtil.convertObjectToJsonBytes(calendarEventDTO)))
@@ -161,7 +187,8 @@ public class CalendarEventResourceIntTest {
         int databaseSizeBeforeCreate = calendarEventRepository.findAll().size();
 
         // Create the CalendarEvent with an existing ID
-        calendarEvent.setId(1L);
+        CalendarEventDTO calendarEventDTO = getEventDTO();
+        calendarEventDTO.setId(1L);
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restCalendarEventMockMvc.perform(post("/api/calendar-events")
@@ -176,66 +203,10 @@ public class CalendarEventResourceIntTest {
 
     @Test
     @Transactional
-    @Ignore
-    public void checkTitleIsRequired() throws Exception {
-        int databaseSizeBeforeTest = calendarEventRepository.findAll().size();
-        // set the field null
-        calendarEvent.setTitle(null);
-
-        // Create the CalendarEvent, which fails.
-
-        restCalendarEventMockMvc.perform(post("/api/calendar-events")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(calendarEventDTO)))
-            .andExpect(status().isBadRequest());
-
-        List<CalendarEvent> calendarEventList = calendarEventRepository.findAll();
-        assertThat(calendarEventList).hasSize(databaseSizeBeforeTest);
-    }
-
-    @Test
-    @Transactional
-    @Ignore
-    public void checkTimeIsRequired() throws Exception {
-        int databaseSizeBeforeTest = calendarEventRepository.findAll().size();
-        // set the field null
-        calendarEvent.setTime(null);
-
-        // Create the CalendarEvent, which fails.
-
-        restCalendarEventMockMvc.perform(post("/api/calendar-events")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(calendarEventDTO)))
-            .andExpect(status().isBadRequest());
-
-        List<CalendarEvent> calendarEventList = calendarEventRepository.findAll();
-        assertThat(calendarEventList).hasSize(databaseSizeBeforeTest);
-    }
-
-    @Test
-    @Transactional
-    @Ignore
-    public void checkReminderTimeIsRequired() throws Exception {
-        int databaseSizeBeforeTest = calendarEventRepository.findAll().size();
-        // set the field null
-        calendarEvent.setReminderTime(null);
-
-        // Create the CalendarEvent, which fails.
-
-        restCalendarEventMockMvc.perform(post("/api/calendar-events")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(calendarEventDTO)))
-            .andExpect(status().isBadRequest());
-
-        List<CalendarEvent> calendarEventList = calendarEventRepository.findAll();
-        assertThat(calendarEventList).hasSize(databaseSizeBeforeTest);
-    }
-
-    @Test
-    @Transactional
     public void getAllCalendarEvents() throws Exception {
         // Initialize the database
-        calendarEventRepository.saveAndFlush(calendarEvent);
+        persistCalendarEvent();
+        CalendarEvent calendarEvent = calendarEventRepository.findAll().get(0);
 
         // Get all the calendarEventList
         restCalendarEventMockMvc.perform(get("/api/calendar-events?sort=id,desc"))
@@ -253,7 +224,8 @@ public class CalendarEventResourceIntTest {
     @Transactional
     public void getCalendarEvent() throws Exception {
         // Initialize the database
-        calendarEventRepository.saveAndFlush(calendarEvent);
+        persistCalendarEvent();
+        CalendarEvent calendarEvent = calendarEventRepository.findAll().get(0);
 
         // Get the calendarEvent
         restCalendarEventMockMvc.perform(get("/api/calendar-events/{id}", calendarEvent.getId()))
@@ -279,7 +251,8 @@ public class CalendarEventResourceIntTest {
     @Transactional
     public void updateCalendarEvent() throws Exception {
         // Initialize the database
-        calendarEventService.save(calendarEvent);
+        persistCalendarEvent();
+        CalendarEvent calendarEvent = calendarEventRepository.findAll().get(0);
 
         int databaseSizeBeforeUpdate = calendarEventRepository.findAll().size();
 
@@ -314,11 +287,12 @@ public class CalendarEventResourceIntTest {
         int databaseSizeBeforeUpdate = calendarEventRepository.findAll().size();
 
         // Create the CalendarEvent
+        CalendarEventDTO calendarEventDTO = getEventDTO();
 
         // If the entity doesn't have an ID, it will be created instead of just being updated
         restCalendarEventMockMvc.perform(put("/api/calendar-events")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(calendarEvent)))
+            .content(TestUtil.convertObjectToJsonBytes(calendarEventDTO)))
             .andExpect(status().isCreated());
 
         // Validate the CalendarEvent in the database
@@ -330,7 +304,8 @@ public class CalendarEventResourceIntTest {
     @Transactional
     public void deleteCalendarEvent() throws Exception {
         // Initialize the database
-        calendarEventService.save(calendarEvent);
+        persistCalendarEvent();
+        CalendarEvent calendarEvent = calendarEventRepository.findAll().get(0);
 
         int databaseSizeBeforeDelete = calendarEventRepository.findAll().size();
 

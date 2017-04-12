@@ -5,13 +5,18 @@ import gvaughn.example.calendar.domain.CalendarEvent;
 import gvaughn.example.calendar.domain.User;
 import gvaughn.example.calendar.repository.CalendarEventRepository;
 import gvaughn.example.calendar.service.dto.CalendarEventDTO;
+import gvaughn.example.calendar.service.dto.EventListDurationDTO;
 import gvaughn.example.calendar.service.mapper.CalendarEventMapper;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -106,6 +111,22 @@ public class CalendarEventService {
         Objects.requireNonNull(user);
         Calendar calendar = calendarService.getCalendarForUser(user);
         return calendarEventRepository.findByCalendarOrderByTime(calendar);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CalendarEvent> findByUserAndDuration(User user, EventListDurationDTO durationDTO) {
+        Objects.requireNonNull(user);
+        Objects.requireNonNull(durationDTO);
+        Calendar calendar = calendarService.getCalendarForUser(user);
+        Pair<ZonedDateTime, ZonedDateTime> dates = getDurationDates(durationDTO);
+        return calendarEventRepository.findByCalendarAndTimeBetweenOrderByTime(calendar, dates.getLeft(), dates.getRight());
+    }
+
+    protected Pair<ZonedDateTime, ZonedDateTime> getDurationDates(EventListDurationDTO durationDTO) {
+        ZonedDateTime submittedStartDate = durationDTO.getStartDate();
+        ZonedDateTime startDate = submittedStartDate.truncatedTo(ChronoUnit.DAYS);
+        ZonedDateTime endDate = startDate.plusDays(durationDTO.getDuration().getDays());
+        return Pair.of(startDate, endDate);
     }
 
     /**

@@ -5,6 +5,7 @@ import gvaughn.example.calendar.domain.CalendarEvent;
 
 import org.springframework.data.jpa.repository.*;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 /**
@@ -14,4 +15,6 @@ import java.util.List;
 public interface CalendarEventRepository extends JpaRepository<CalendarEvent,Long> {
 
     List<CalendarEvent> findByCalendarOrderByTime(Calendar calendar);
+
+    List<CalendarEvent> findByCalendarAndTimeBetweenOrderByTime(Calendar calendar, ZonedDateTime startDate, ZonedDateTime endDate);
 }
