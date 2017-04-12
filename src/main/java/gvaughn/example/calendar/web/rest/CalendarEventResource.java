@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -83,6 +84,7 @@ public class CalendarEventResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PutMapping("/calendar-events")
+    @PreAuthorize("@calendarEventPermissions.isOwner(calendarEvent)")
     @Timed
     public ResponseEntity<CalendarEvent> updateCalendarEvent(@Valid @RequestBody CalendarEventDTO calendarEvent) throws URISyntaxException {
         log.debug("REST request to update CalendarEvent : {}", calendarEvent);
@@ -135,6 +137,7 @@ public class CalendarEventResource {
      * @return the ResponseEntity with status 200 (OK)
      */
     @DeleteMapping("/calendar-events/{id}")
+    @PreAuthorize("@calendarEventPermissions.isOwner(calendarEvent)")
     @Timed
     public ResponseEntity<Void> deleteCalendarEvent(@PathVariable Long id) {
         log.debug("REST request to delete CalendarEvent : {}", id);
